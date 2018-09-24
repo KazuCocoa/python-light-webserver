@@ -1,35 +1,49 @@
+import os
+from mimetypes import guess_type
 import socket
 
-def view(request):
-    if request['PATH_INFO'] == '/':
-        body = '''
-        <html>
-        <head>
-            <link href="/static/style.css" rel="stylesheet">
-        </head>
-        <body>
-            <h1>Hello World!</h1>
-            <img src="/static/image.jpg">
-        </body>
-        </html>
-        '''
-        resp = ('200 OK', [('Content-Type', 'text/html')], body)
-    elif request['PATH_INFO'] == '/static/style.css':
-        headers = [
-            ('Content-Type', 'text/css'),
-        ]
-        resp = ('200 OK', headers, open('static/style.css', 'rb').read())
-    elif request['PATH_INFO'] == '/static/image.jpeg':
-        headers = [
-            ('Content-Type', 'image/jpg'),
-        ]
-        resp = ('200 OK', headers, open('static/image.jpg', 'rb').read())
-    else:
-        body = '''
-        NO PAGE
-        '''
-        resp = ('404 NOT FOUND', [('Content-Type', 'text/plain')], body)
-    return resp
+def index_view(request):
+    body = '''
+    <html>
+    <head>
+        <link href="/static/style.css" rel="stylesheet">
+    </head>
+    <body>
+        <h1>Hello World!</h1>
+        <img src="/static/image.jpg">
+    </body>
+    </html>
+    '''
+    return ('200 OK', [('Content-Type', 'text/html')], body)
+
+def file_view(request):
+    path = request['PATH_INFO']
+    path = path.lstrip('/')
+    if not os.path.isfile(path):
+        return notfound_view(request)
+
+    ct, _ = guess_type(path)
+    if ct is None:
+        ct = 'application/octet-stream'
+    headers = [
+        ('Content-Type', ct),
+    ]
+    return ('200 OK', headers, open(path, 'rb').read())
+
+def notfound_view(reqeust):
+    return ('404 NOT FOUND', [('Content-Type', 'text/plain')], 'NO PAGE')
+
+patterns = {
+    '/static/': file_view,
+    '/': index_view,
+}
+
+def dispatch(request):
+    path_info = request['PATH_INFO']
+    for path, view in patterns.items():
+        if path_info.startswith(path):
+            return view
+    return notfound_view
 
 def create_request(raw_request):
     if isinstance(raw_request, bytes):
@@ -62,6 +76,7 @@ def create_response(status, headers, body):
 
 def app(raw_request):
     request = create_request(raw_request)
+    view  = dispatch(request)
     status, headers, body = view(request)
     if isinstance(body, str):
         body = body.encode('utf=8')
