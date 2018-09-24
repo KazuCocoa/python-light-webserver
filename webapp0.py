@@ -3,13 +3,29 @@ import socket
 def view(request):
     if request['PATH_INFO'] == '/':
         body = '''
-        <html><body>
-            <h1>Hello</h1>
-        </body></html>
+        <html>
+        <head>
+            <link href="/static/style.css" rel="stylesheet">
+        </head>
+        <body>
+            <h1>Hello World!</h1>
+            <img src="/static/image.jpg">
+        </body>
+        </html>
         '''
         resp = ('200 OK', [('Content-Type', 'text/html')], body)
+    elif request['PATH_INFO'] == '/static/style.css':
+        headers = [
+            ('Content-Type', 'text/css'),
+        ]
+        resp = ('200 OK', headers, open('static/style.css', 'rb').read())
+    elif request['PATH_INFO'] == '/static/image.jpeg':
+        headers = [
+            ('Content-Type', 'image/jpg'),
+        ]
+        resp = ('200 OK', headers, open('static/image.jpg', 'rb').read())
     else:
-        resp = '''
+        body = '''
         NO PAGE
         '''
         resp = ('404 NOT FOUND', [('Content-Type', 'text/plain')], body)
@@ -54,7 +70,7 @@ def app(raw_request):
 
 def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('127.0.0.1', 8081))
+        s.bind(('127.0.0.1', 8082))
         s.listen()
         while True:
             conn, addr = s.accept()
