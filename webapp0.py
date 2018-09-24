@@ -1,21 +1,33 @@
 import socket
-import random
+import textwrap
 
 def view(raw_request):
-    print(raw_request)
-    resp = '''HTTP/1.1 200 OK
+    header, body = raw_request.split('\r\n\r\n', 1)
+    print(header)
+    print(body)
+    headers = header.splitlines()
+    method, path, version = headers[0].split(' ', 2)
 
-    <html><body>
-      <h1>Hello</h1>
-    </body></html>
+    if path == '/':
+        resp = textwrap.dedent('''\
+        HTTP/1.1 200 OK
 
-    '''
+        <html><body>
+            <h1>Hello</h1>
+        </body></html>
+        ''')
+    else:
+        resp = textwrap.dedent('''\
+        HTTP/1.1 404 NOT FOUND
+
+        NO PAGE
+        ''')
 
     return resp
 
 def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('127.0.0.1', 8000))
+        s.bind(('127.0.0.1', 8081))
         s.listen()
         while True:
             conn, addr = s.accept()
