@@ -1,8 +1,15 @@
 import socket
+import random
 
 def view(raw_request):
     print(raw_request)
-    return 'HTTP/1.1 501\r\n\r\nSorry\n'
+    resp_list = [
+        'HTTP/1.1 404 Not Found\r\n\r\nNo Page\n',
+        'HTTP/1.1 402 Payment Required\r\n\r\nMoney\n',
+        'HTTP/1.1 501 Not Implemented\r\n\r\nDeveloping\n',
+    ]
+    resp = random.choice(resp_list)
+    return resp
 
 def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
