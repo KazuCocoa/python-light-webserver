@@ -3,12 +3,14 @@ import random
 
 def view(raw_request):
     print(raw_request)
-    resp_list = [
-        'HTTP/1.1 404 Not Found\r\n\r\nNo Page\n',
-        'HTTP/1.1 402 Payment Required\r\n\r\nMoney\n',
-        'HTTP/1.1 501 Not Implemented\r\n\r\nDeveloping\n',
-    ]
-    resp = random.choice(resp_list)
+    resp = '''HTTP/1.1 200 OK
+
+    <html><body>
+      <h1>Hello</h1>
+    </body></html>
+
+    '''
+
     return resp
 
 def main():
